@@ -29,10 +29,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: "platforms;android-35 build-tools;35.0.0 platform-tools"
+      - name: Install Android SDK 35
+        run: |
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          rm -rf $ANDROID_SDK_ROOT/platforms/android-35
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          ls -lh $ANDROID_SDK_ROOT/platforms/android-35/android.jar
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
