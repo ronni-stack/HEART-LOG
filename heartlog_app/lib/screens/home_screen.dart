@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:heartlog/models/journal_entry.dart';
+import 'package:heartlog/services/database_service.dart';
+import 'package:heartlog/services/user_service.dart';
 import 'package:heartlog/theme/app_colors.dart';
+import 'package:uuid/uuid.dart';
 import 'recording_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,6 +15,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedMood = 2;
+  String _userName = 'Ronny';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final name = await UserService().name;
+    if (mounted) setState(() => _userName = name);
+  }
 
   final List<Map<String, dynamic>> _moods = [
     {'label': 'Great', 'emoji': '😄'},
@@ -38,6 +54,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _onMoodSelected(int index) async {
+    setState(() => _selectedMood = index);
+    final mood = _moods[index]['label'] as String;
+
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => _MoodReasonDialog(mood: mood),
+    );
+
+    if (reason == null || !mounted) return;
+
+    final entry = JournalEntry(
+      id: const Uuid().v4(),
+      title: 'Feeling $mood',
+      content: reason.trim().isEmpty
+          ? 'I\'m feeling $mood today.'
+          : 'I\'m feeling $mood because: $reason',
+      mood: mood,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    await DatabaseService().insertEntry(entry);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Mood logged: $mood')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -58,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$_greeting, Mia ☀️',
+                        '$_greeting, $_userName ☀️',
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 4),
@@ -177,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMoodItem(int index) {
     final isSelected = _selectedMood == index;
     return GestureDetector(
-      onTap: () => setState(() => _selectedMood = index),
+      onTap: () => _onMoodSelected(index),
       child: Column(
         children: [
           AnimatedContainer(
@@ -277,5 +323,55 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+}
+
+class _MoodReasonDialog extends StatefulWidget {
+  final String mood;
+
+  const _MoodReasonDialog({required this.mood});
+
+  @override
+  State<_MoodReasonDialog> createState() => _MoodReasonDialogState();
+}
+
+class _MoodReasonDialogState extends State<_MoodReasonDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      title: Text(
+        'Why do you feel ${widget.mood.toLowerCase()}?',
+        style: theme.textTheme.headlineMedium,
+      ),
+      content: TextField(
+        controller: _controller,
+        maxLines: 4,
+        decoration: const InputDecoration(
+          hintText: 'Optional: write a few words...',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Skip'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

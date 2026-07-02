@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:heartlog/screens/home_screen.dart';
-import 'package:heartlog/screens/journal_screen.dart';
-import 'package:heartlog/screens/meditate_screen.dart';
-import 'package:heartlog/screens/profile_screen.dart';
+import 'package:heartlog/screens/main_scaffold.dart';
+import 'package:heartlog/screens/onboarding_screen.dart';
+import 'package:heartlog/services/user_service.dart';
+import 'package:heartlog/theme/app_colors.dart';
 import 'package:heartlog/theme/app_theme.dart';
-import 'package:heartlog/widgets/bottom_nav.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,38 +19,44 @@ class HeartLogApp extends StatelessWidget {
       title: 'HeartLog',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainScaffold(),
+      home: const SplashDecisionScreen(),
     );
   }
 }
 
-class MainScaffold extends StatefulWidget {
-  const MainScaffold({super.key});
+class SplashDecisionScreen extends StatefulWidget {
+  const SplashDecisionScreen({super.key});
 
   @override
-  State<MainScaffold> createState() => _MainScaffoldState();
+  State<SplashDecisionScreen> createState() => _SplashDecisionScreenState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
-  int _currentIndex = 0;
+class _SplashDecisionScreenState extends State<SplashDecisionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    JournalScreen(),
-    MeditateScreen(),
-    ProfileScreen(),
-  ];
+  Future<void> _checkOnboarding() async {
+    final completed = await UserService().hasCompletedOnboarding;
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => completed
+            ? const MainScaffold()
+            : const OnboardingScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(color: AppColors.darkGreen),
       ),
     );
   }

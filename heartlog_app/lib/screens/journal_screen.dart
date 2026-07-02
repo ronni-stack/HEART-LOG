@@ -4,6 +4,7 @@ import 'package:heartlog/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import '../models/journal_entry.dart';
 import 'entry_detail_screen.dart';
+import 'quick_journal_screen.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -16,6 +17,7 @@ class _JournalScreenState extends State<JournalScreen> {
   final DatabaseService _databaseService = DatabaseService();
   List<JournalEntry> _entries = [];
   List<JournalEntry> _filteredEntries = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -24,10 +26,12 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Future<void> _loadEntries() async {
+    setState(() => _isLoading = true);
     final entries = await _databaseService.getEntries();
     setState(() {
       _entries = entries;
       _filteredEntries = entries;
+      _isLoading = false;
     });
   }
 
@@ -68,6 +72,19 @@ class _JournalScreenState extends State<JournalScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const QuickJournalScreen()),
+          );
+          _loadEntries();
+        },
+        backgroundColor: AppColors.darkGreen,
+        foregroundColor: AppColors.white,
+        elevation: 4,
+        child: const Icon(Icons.add),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,9 +115,11 @@ class _JournalScreenState extends State<JournalScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _filteredEntries.isEmpty
-                  ? _buildEmptyState(theme)
-                  : ListView.builder(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.darkGreen))
+                  : _filteredEntries.isEmpty
+                      ? _buildEmptyState(theme)
+                      : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       itemCount: _filteredEntries.length,
                       itemBuilder: (context, index) {

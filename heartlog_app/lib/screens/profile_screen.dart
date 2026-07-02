@@ -1,8 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:heartlog/screens/settings/appearance_screen.dart';
+import 'package:heartlog/screens/settings/notifications_screen.dart';
+import 'package:heartlog/screens/settings/privacy_screen.dart';
+import 'package:heartlog/services/user_service.dart';
 import 'package:heartlog/theme/app_colors.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _userName = 'Ronny';
+  int? _userAge;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final data = await UserService().getUserData();
+    if (mounted) {
+      setState(() {
+        _userName = data['name'] as String;
+        _userAge = data['age'] as int?;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +66,10 @@ class ProfileScreen extends StatelessWidget {
                           width: 3,
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'M',
-                          style: TextStyle(
+                          _userName.isNotEmpty ? _userName[0].toUpperCase() : 'R',
+                          style: const TextStyle(
                             fontSize: 40,
                             fontWeight: FontWeight.w700,
                             color: AppColors.darkGreen,
@@ -51,12 +79,12 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Mia',
+                      _userName,
                       style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 4),
-                      Text(
-                      'mia@heartlog.app',
+                    Text(
+                      _userAge != null ? 'Age $_userAge • ${_userName.toLowerCase()}@heartlog.app' : '${_userName.toLowerCase()}@heartlog.app',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -68,16 +96,28 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
                 subtitle: 'Daily reminders & insights',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ),
               ),
               _buildMenuItem(
                 icon: Icons.lock_outline,
                 title: 'Privacy',
                 subtitle: 'Secure your journal entries',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                ),
               ),
               _buildMenuItem(
                 icon: Icons.palette_outlined,
                 title: 'Appearance',
                 subtitle: 'Theme & display options',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AppearanceScreen()),
+                ),
               ),
               const SizedBox(height: 24),
               _buildSectionTitle(theme, 'Support'),
@@ -113,8 +153,11 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
+    VoidCallback? onTap,
   }) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -165,6 +208,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -34,6 +34,9 @@ dependencies:
   # State management
   provider: ^6.1.2
 
+  # Local preferences
+  shared_preferences: ^2.2.3
+
   # Audio recording & playback
   record: ^5.1.2
   audioplayers: ^5.0.0
