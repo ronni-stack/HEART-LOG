@@ -71,6 +71,10 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   sqflite_common_ffi: ^2.3.3
 
+# Fix record package platform interface mismatch
+dependency_overrides:
+  record_platform_interface: 1.2.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
