@@ -36,7 +36,7 @@ dependencies:
 
   # Audio recording & playback
   record: ^5.1.2
-  audioplayers: ^6.0.0
+  audioplayers: ^5.0.0
 
   # Voice-to-text
   speech_to_text: ^6.6.0
