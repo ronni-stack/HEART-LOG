@@ -1,0 +1,41 @@
+# Flutter SDK (local installation)
+flutter/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Flutter/Dart build outputs
+heartlog_app/build/
+heartlog_app/.dart_tool/
+heartlog_app/.flutter-plugins
+heartlog_app/.flutter-plugins-dependencies
+heartlog_app/.packages
+heartlog_app/pubspec.lock
+
+# iOS / Android generated files
+heartlog_app/ios/Pods/
+heartlog_app/ios/.symlinks/
+heartlog_app/ios/Flutter/Flutter.framework
+heartlog_app/ios/Flutter/Flutter.podspec
+heartlog_app/android/.gradle/
+heartlog_app/android/app/debug/
+heartlog_app/android/app/profile/
+heartlog_app/android/app/release/
+
+# Web build
+heartlog_app/build/web/
+
+# Symbolication files
+heartlog_app/*.symbols
+
+# Test coverage
+heartlog_app/coverage/
+
+# Local env files
+.env
+*.env
